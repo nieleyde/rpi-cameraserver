@@ -26,5 +26,11 @@ RUN git clone https://github.com/monsendag/rpi-cameraserver.git /app
 # install picamera
 RUN cd /app && pip install -r requirements.txt
 
+# export rests port
+EXPOSE 5000
+
+# expose volume containing stream data
+VOLUME ["/app/stream-data"]
+
 # start video server
 CMD /app/server.py
