@@ -1,5 +1,9 @@
 FROM cellofellow/rpi-arch
 
+MAINTAINER Dag Einar Monsen "me@dag.im"
+
+ENV REFRESHED_AT 2014-12-06
+
 RUN pacman --noconfirm -Syu 
 
 # install dependencies
