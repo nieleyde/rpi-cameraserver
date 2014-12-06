@@ -19,10 +19,10 @@ ffmpeg -y \
   -c:v copy \
   -map 0:0 -map 1:0 \
   -f segment \
-  -segment_time 8 \
+  -hls_time 5 \
+  -hls_list_size 10 \
   -segment_format mpegts \
   -segment_list "live/live.m3u8" \
-  -segment_list_size 720 \
   -segment_list_flags live \
   -segment_list_type m3u8 \
   "live/%08d.ts" < /dev/null 
