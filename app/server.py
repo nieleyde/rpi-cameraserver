@@ -1,27 +1,33 @@
-import picamera
-import sys
-from subprocess import Popen, PIPE
+#!/usr/bin/env python
+from flask import Flask, request, Response
 
-print("starting..")
+import io
+import still, stream
+#import picamera
 
-with picamera.PiCamera() as camera:
-    psips = Popen(["psips"], stdin=PIPE, stdout="stream/live.h264")
-    camera.resolution = (1280, 720)
-    camera.framerate = 5
-    camera.rotation = 180
+app = Flask(__name__)
+
+#with picamera.PiCamera() as camera:
     
-    camera.start_recording(psips.stdin, format='h264', bitrate=2000, quality=23)
-     
-    try:
-        while True:
-           camera.wait_recording(4)
-    except KeyboardInterrupt:
-        print("stopping recording ...")
-        camera.stop_recording()
-        psips.stdin.close()
+@app.route("/")
+def hello():
+    return "Hello World!"
 
+@app.route("/still")
+def capturestill():
+    #my_stream = io.BytesIO()
+    #still.capture(camera, my_stream)
+    #return Response(my_stream)
+    
+    return "hello still"
 
-    # GET /photo camera.capture('/project/foo.jpg', use_video_port=False)
+@app.route("/startstream")
+def start_stream():
+    stream.start(camera)
 
-    # GET /video
+@app.route("/stopstream")
+def stop_stream():
+    stream.stop()
 
+    
+app.run()
