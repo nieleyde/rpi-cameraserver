@@ -5,20 +5,20 @@ from subprocess import Popen, PIPE
 print("starting..")
 
 with picamera.PiCamera() as camera:
-    dashcast = Popen(["DashCast", "-logs", "dash@info", "-live", "-conf", "dashcast.conf", "-v", "pipe:", "-vf", "h264", "-vres", "1280x720", "-vfr", "10", "-mpd-refresh", "1", "-out", "dashcast"], stdin=PIPE)
+    psips = Popen(["psips"], stdin=PIPE, stdout="stream/live.h264")
     camera.resolution = (1280, 720)
-    camera.framerate = 2
+    camera.framerate = 5
     camera.rotation = 180
     
-    camera.start_recording(dashcast.stdin, format='h264', bitrate=2000, quality=23)
+    camera.start_recording(psips.stdin, format='h264', bitrate=2000, quality=23)
      
     try:
         while True:
-           camera.wait_recording(0.2)
+           camera.wait_recording(4)
     except KeyboardInterrupt:
         print("stopping recording ...")
         camera.stop_recording()
-        dashcast.stdin.close()
+        psips.stdin.close()
 
 
     # GET /photo camera.capture('/project/foo.jpg', use_video_port=False)
