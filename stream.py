@@ -2,8 +2,9 @@ import os, os.path
 import sys
 from subprocess import Popen, PIPE
 
-import thread
+import threading
 import time
+import traceback
 
 _camera = None
 
@@ -36,19 +37,20 @@ def start_recording(camera):
         # let it buffer some video before we start ffmpeg
         time.sleep(2)
         
-        _thread_ffmpeg = thread.start_new_thread(run_ffmpeg)
+        _thread_ffmpeg = threading.Thread(target=run_ffmpeg)
     
         while _active:
             camera.wait_recording(4)
             
     except KeyboardInterrupt:
-        print("stopping recording ...")
+        print("keyboard interrupt ...")
         camera.stop_recording()
         psips.stdin.close()
         ffmpeg.exit()
         
     except:
-        print "Error: unable to start threads"
+        print("Error: unable to start threads")
+        print(traceback.format_exc())
     
 
 def run_ffmpeg():
@@ -71,10 +73,12 @@ def start(camera):
 
     # Create two threads as follows
     try:    
-        _thread_psips = thread.start_new_thread(start_recording, (camera))
+        _thread_psips = threading.Thread(target=start_recording, args=(camera))
+        _thread_psips.start()
        
     except:
-       print "Error: unable to start threads"
+        print("Error: unable to start threads")
+        print(traceback.format_exc())
     
     # GET /photo camera.capture('/project/foo.jpg', use_video_port=False)
 
