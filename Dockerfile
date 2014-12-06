@@ -3,12 +3,10 @@ FROM cellofellow/rpi-arch
 RUN pacman --noconfirm -Syu 
 
 # install dependencies
-RUN pacman --noconfirm -S python python-pip base-devel openssh git
+RUN pacman --noconfirm -S python python-pip
 
-# install psips
-RUN git clone git://github.com/AndyA/psips.git \
-	&& cd psips \
-	&& ./setup.sh && ./configure && make && make install
+# add psips
+ADD lib/psips/bin/psips /usr/bin/
 
 # add raspberry pi firmware libraries
 ADD lib/opt/ /opt/
@@ -20,7 +18,7 @@ ADD lib/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 RUN ldconfig
 
 # install picamera
-RUN pip install picamera
+RUN cd /app && pip install -r requirements.txt
 
 # start video server
-CMD python /app/server.py
+CMD /app/server.py
