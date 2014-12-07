@@ -13,7 +13,7 @@ def capture(camera, params):
         camera.iso = int(params.get('iso', 0))
         camera.saturation = int(params.get('saturation', 0))
         camera.sharpness = int(params.get('sharpness', 0))
-        camera.shutter_speed = params.get('shutter_speed', 0)
+        camera.shutter_speed = int(params.get('shutter_speed', 0))
         
         camera.awb_mode = params.get('awb_mode', 'auto')
         camera.brightness = int(params.get('brightness', 50))
@@ -24,16 +24,16 @@ def capture(camera, params):
 
         camera.meter_mode = params.get('meter_mode', 'average')
 
-        camera.image_denoise = not bool(params.get('disable_image_denoise', False))
+        camera.image_denoise = params.get('disable_image_denoise') == "true"
         camera.image_effect = params.get('image_effect', 'none')
 
-        camera.hflip = bool(params.get('hflip', False))
-        camera.vflip = bool(params.get('vflip', False))
+        camera.hflip = params.get('hflip') == "true"
+        camera.vflip = params.get('vflip') == "true"
 
         camera.exif_tags['IFD0.Copyright'] = 'Dag Einar Monsen <me@dag.im>'
 
 
-        quality = params.get('quality', 90)
+        quality = int(params.get('quality', 90))
 
         camera.start_preview()
         time.sleep(0.2)
