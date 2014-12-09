@@ -21,6 +21,9 @@ ADD lib/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 # register mmal library with ldd
 RUN ldconfig
 
+# bust cache of application
+ENV BUST_APP c18e3bb
+
 RUN git clone https://github.com/monsendag/rpi-cameraserver.git /app
 
 # install picamera
