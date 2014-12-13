@@ -4,9 +4,14 @@ import logging
 import time
 import io
 import picamera
+import sys
+import os
+from subprocess import Popen, PIPE
 
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Camera(pykka.ThreadingActor):
@@ -23,7 +28,8 @@ class Camera(pykka.ThreadingActor):
     
     def on_start(self):
         self.logger = logging.getLogger('cameraserver.actor')
-        self.logger.setLevel(logging.DEBUG)
+
+
         
         ch = logging.StreamHandler()
         ch.setLevel(logging.DEBUG)
@@ -31,11 +37,12 @@ class Camera(pykka.ThreadingActor):
         self.logger.addHandler(ch)
         self.logger.debug('rpi-cameraserver: starting camera actor')
         
+
         self.picamera = picamera.PiCamera()
         self.camera = self.picamera.__enter__()
     
     def on_stop(self):
-        self.picamera.__exit__()
+        self.picamera.__exit__(sys.exc_info())
         
     
     def on_receive(self, envelope):
@@ -75,7 +82,7 @@ class Camera(pykka.ThreadingActor):
             
             # start psips process to ensure we have SPS and PPS NALs in our h264 segments
             # psips will pipe its contents to a linux named pipe which is picked up by ffmpeg
-            self.process_psips = Popen(["psips"], stdin=PIPE, stdout="stream.h264")
+            self.process_psips = Popen(["psips"], stdin=PIPE, stdout=open('stream.h264', 'w'))
             
             # pass h264 bits from pipicamera to psips stdin
             self.camera.start_recording(psips.stdin, format='h264', bitrate=2000, quality=23)
@@ -86,7 +93,7 @@ class Camera(pykka.ThreadingActor):
             # camera.start_recording
         
         while(self.is_recording and self.actor_inbox.empty()):
-            #self.logger.info('rpi-cameraserver: recording')
+            self.logger.info('rpi-cameraserver: recording')
             self.camera.wait_recording(0.5)
             
     def start_ffmpeg(self):
@@ -114,7 +121,6 @@ class Camera(pykka.ThreadingActor):
         self.process_ffmpeg.terminate()
     
     def take_picture(self, params):
-        stream = io.BytesIO()
         
         camera = self.camera
             
@@ -149,7 +155,9 @@ class Camera(pykka.ThreadingActor):
         if(not self.is_recording):
             camera.start_preview()
             time.sleep(0.2)
+
+        stream = io.BytesIO()
         camera.capture(stream, format='jpeg', quality=quality)
         
-        return stream.getValue()
+        return stream.getvalue()
         
