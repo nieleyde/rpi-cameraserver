@@ -22,7 +22,7 @@ ADD lib/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 RUN ldconfig
 
 # bust cache of application
-ENV BUST_APP c18e3bb
+ENV BUST_APP f998abe
 
 RUN git clone https://github.com/monsendag/rpi-cameraserver.git /app
 
@@ -31,9 +31,6 @@ RUN cd /app && pip install -r requirements.txt
 
 # export rests port
 EXPOSE 5000
-
-# expose volume containing stream data
-VOLUME ["/app/stream-data"]
 
 # start video server
 CMD /app/server.py
