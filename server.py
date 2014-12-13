@@ -1,14 +1,10 @@
 #!/usr/bin/env python
+
 from flask import Flask, request, Response
 from flask import send_file, send_from_directory
-
-import io
-from still import capture
+import cameraManager
 
 app = Flask(__name__)
-
-from . import cameraManager
-
 
 @app.route("/")
 def hello():
@@ -20,11 +16,14 @@ def still():
 
 @app.route("/startstream")
 def start_stream():
-    cameraManager.start_recording()
+    cameraManager.start_recording(request.args)
+    return Response('{"message": "starting"}')
 
 @app.route("/stopstream")
 def stop_stream():
     cameraManager.stop_recording()
+    return Response('{"message": "stopping"}')
+    
 
 @app.route("/stream/<path:filename>")
 def serve_stream_data(filename):
