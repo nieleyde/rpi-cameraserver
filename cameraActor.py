@@ -12,7 +12,25 @@ from subprocess import Popen, PIPE
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
 logging.basicConfig(level=logging.DEBUG)
-
+class StreamToLogger(object):
+   """
+   Fake file-like stream object that redirects writes to a logger instance.
+   """
+   def __init__(self, logger, log_level=logging.INFO):
+      self.logger = logger
+      self.log_level = log_level
+      self.linebuf = ''
+ 
+   def write(self, buf):
+      for line in buf.rstrip().splitlines():
+         self.logger.log(self.log_level, line.rstrip())
+ 
+logging.basicConfig(
+   level=logging.DEBUG,
+   format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+   filename="out.log",
+   filemode='a'
+)
 
 class Camera(pykka.ThreadingActor):
     
@@ -28,7 +46,6 @@ class Camera(pykka.ThreadingActor):
     
     def on_start(self):
         self.logger = logging.getLogger('cameraserver.actor')
-
 
         
         ch = logging.StreamHandler()
@@ -82,7 +99,10 @@ class Camera(pykka.ThreadingActor):
             
             # start psips process to ensure we have SPS and PPS NALs in our h264 segments
             # psips will pipe its contents to a linux named pipe which is picked up by ffmpeg
-            self.process_psips = Popen(["psips"], stdin=PIPE, stdout=open('stream.h264', 'w'))
+            self.process_psips = Popen(["psips"], 
+                    stdin=PIPE,
+                    stdout=open('stream.h264', 'w'), 
+                    stderr=StreamToLogger(logging.getLogger('psips'), logging.ERROR))
             
             # pass h264 bits from pipicamera to psips stdin
             self.camera.start_recording(psips.stdin, format='h264', bitrate=2000, quality=23)
@@ -112,13 +132,18 @@ class Camera(pykka.ThreadingActor):
             "-segment_list", "stream/playlist.m3u8",
             "-segment_list_flags", "live",
             "stream/%08d.ts"
-        ])
+            ], stderr=StreamToLogger(logging.getLogger('ffmpeg'), logging.ERROR)
+             , stdout=StreamToLogger(logging.getLogger('ffmpeg'), logging.INFO))
     
     def stop_recording(self):
         self.is_recording = False
-        self.camera.stop_recording()
-        self.process_psips.terminate()
-        self.process_ffmpeg.terminate()
+        if(camera.recording):
+            self.camera.stop_recording()
+            self.process_psips.terminate()
+            self.process_ffmpeg.terminate()
+            return "stopped recording"
+        return "was already stopped"         
+
     
     def take_picture(self, params):
         

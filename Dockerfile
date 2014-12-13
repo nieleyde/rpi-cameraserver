@@ -22,7 +22,7 @@ ADD lib/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 RUN ldconfig
 
 # bust cache of application
-ENV BUST_APP c18e3bb
+ENV BUST_APP 788b7d6
 
 RUN git clone https://github.com/monsendag/rpi-cameraserver.git /app
 
