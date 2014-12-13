@@ -10,13 +10,13 @@ RUN pacman --noconfirm -Syu
 RUN pacman --noconfirm -S python python-pip git
 
 # add psips
-ADD lib/psips/bin/psips /usr/bin/
+ADD vendor/psips/bin/psips /usr/bin/
 
 # add raspberry pi firmware libraries
-ADD lib/opt/ /opt/
+ADD vendor/opt/ /opt/
 
 # add library reference to ldconfig
-ADD lib/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
+ADD vendor/etc/ld.so.conf.d/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 
 # register mmal library with ldd
 RUN ldconfig
