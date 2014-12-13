@@ -5,6 +5,10 @@ import time
 import io
 import picamera
 
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+
+
 class Camera(pykka.ThreadingActor):
     
     logger = None
@@ -18,7 +22,14 @@ class Camera(pykka.ThreadingActor):
     
     
     def on_start(self):
-        self.logger = logging.getLogger('cameraserver')
+        self.logger = logging.getLogger('cameraserver.actor')
+        self.logger.setLevel(logging.DEBUG)
+        
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.DEBUG)
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+        self.logger.debug('rpi-cameraserver: starting camera actor')
         
         self.picamera = picamera.PiCamera()
         self.camera = self.picamera.__enter__()
@@ -31,29 +42,26 @@ class Camera(pykka.ThreadingActor):
         msg = envelope.get('msg')
         
         if(msg == 'TAKE_PICTURE'):
-            #self.logger.info('rpi-cameraserver: taking a picture')
+            self.logger.info('rpi-cameraserver: taking a picture')
             
             params = envelope.get('params')
             return self.take_picture(params)
             
         if(msg == 'START_RECORDING'):
-            #self.logger.info('rpi-cameraserver: starting recording')
+            self.logger.info('rpi-cameraserver: starting recording')
             params = envelope.get('params')
             self.start_recording(True, params)
             
         if(msg == 'CONTINUE_RECORDING'):
-            #self.logger.info('rpi-cameraserver: continuing recording %r' % self.is_recording)
-            
-            if(self.is_recording):
-                self.start_recording(False)
+            self.logger.info('rpi-cameraserver: continuing recording %r' % self.is_recording)
+            self.start_recording(False)
             
         if(msg == 'STOP_RECORDING'):
-            #self.logger.info('rpi-cameraserver: stopping recording')
-            
-            self.stop_recording()    
+            self.logger.info('rpi-cameraserver: stopping recording')
+            self.stop_recording()
     
     
-    def start_recording(self, init, params):
+    def start_recording(self, init, params = None):
         if(init and not self.is_recording):
             self.is_recording = True
                         
