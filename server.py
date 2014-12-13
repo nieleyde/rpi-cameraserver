@@ -29,5 +29,4 @@ def stop_stream():
 def serve_stream_data(filename):
     return send_from_directory('stream', filename)
 
-app.debug = True
 app.run(host='0.0.0.0')
