@@ -1,0 +1,3 @@
+#!/usr/bin/env sh
+# redirect stdin to stdout
+0>&1
