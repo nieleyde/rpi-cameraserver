@@ -1,3 +1,4 @@
 picamera==1.8
 Flask==0.10.1
+Flask-Cors==1.10.1
 Pykka==1.2.0

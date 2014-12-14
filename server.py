@@ -6,6 +6,7 @@ from picamera import PiCamera
 from lib.camera import Camera
 import traceback
 import logging
+from flask.ext.cors import CORS
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)s] %(levelname)s %(message)s')
 
@@ -13,6 +14,7 @@ try:
     camera = Camera(PiCamera())
 
     app = Flask(__name__)
+    CORS(app)
 
     @app.route("/")
     def hello():
