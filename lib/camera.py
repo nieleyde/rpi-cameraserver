@@ -97,17 +97,17 @@ class CameraActor(pykka.ThreadingActor):
             self.camera.rotation = int(params.get('rotation', 180))
             
             # ensure that we have a named pipe
-            if(not os.path.exists("stream.h264")):
-                os.mkfifo("stream.h264")
+            #if(not os.path.exists("stream.h264")):
+            #    os.mkfifo("stream.h264")
             
             log.info('starting psips process')
             
             # start psips process to ensure we have SPS and PPS NALs in our h264 segments
             # psips will pipe its contents to a linux named pipe which is picked up by ffmpeg
             self.process_psips = Popen(["psips"],
-                    shell=True,
+                    shell=False,
                     stdin=PIPE,
-                    stdout=open('stream.h264', 'w'), 
+                    stdout=PIPE, 
                     stderr=None)
             
             log.info('starting recording')
@@ -133,7 +133,7 @@ class CameraActor(pykka.ThreadingActor):
         self.process_ffmpeg = Popen(["ffmpeg",
             "-hide_banner", # disable version and build information in logging
             "-y",
-            "-i", "stream.h264",
+            "-i", "pipe:0",
             "-c:v", "copy", # pass the video stream through without codecing
             "-f", "segment",
             "-hls_time", "5",
@@ -143,7 +143,8 @@ class CameraActor(pykka.ThreadingActor):
             "-segment_list", "stream/playlist.m3u8",
             "-segment_list_flags", "live",
             "stream/%08d.ts"
-            ], 
+            ],
+            stdin=self.process_psips.stdout,
             stderr=None, 
             stdout=None)
     
