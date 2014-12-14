@@ -2,12 +2,14 @@ FROM cellofellow/rpi-arch
 
 MAINTAINER Dag Einar Monsen "me@dag.im"
 
-ENV REFRESHED_AT 2014-12-06
+# Bust dockerfile with git hash
+# `sed -ri -e "s/(BUST_DOCKERFILE\s+).*/\1$(git rev-parse --short HEAD)/" Dockerfile`
+ENV BUST_DOCKERFILE 7b439d9
 
 RUN pacman --noconfirm -Syu 
 
 # install dependencies
-RUN pacman --noconfirm -S python python-pip git
+RUN pacman --noconfirm -S python python-pip git ffmpeg
 
 # add psips
 ADD vendor/psips/bin/psips /usr/bin/
@@ -21,8 +23,9 @@ ADD vendor/etc/ld.so.conf.d/00-raspberrypi-firmware.conf /etc/ld.so.conf.d/
 # register mmal library with ldd
 RUN ldconfig
 
-# bust cache of application
-ENV BUST_APP ce400be
+# bust application cache with git hash
+# `sed -ri -e "s/(BUST_APP\s+).*/\1$(git rev-parse --short HEAD)/" Dockerfile`
+ENV BUST_APP 7b439d9
 
 RUN git clone https://github.com/monsendag/rpi-cameraserver.git /app
 
