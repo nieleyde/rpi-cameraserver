@@ -7,7 +7,7 @@ import sys
 import os
 from subprocess import Popen, PIPE
 
-from util import StreamToLogger 
+from lib.util import StreamToLogger 
 
 log = logging.getLogger('cameraserver.actor')
 

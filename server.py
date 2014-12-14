@@ -2,13 +2,15 @@
 
 from flask import Flask, request, Response
 from flask import send_file, send_from_directory
-from picamera import Picamera
-from cameraserver.camera import Camera
+from picamera import PiCamera
+from lib.camera import Camera
+import traceback
+import logging
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(name)s] %(levelname)s %(message)s')
 
 try:
-    camera = Camera(PicameraMock())
+    camera = Camera(PiCamera())
 
     app = Flask(__name__)
 
@@ -46,4 +48,5 @@ except KeyboardInterrupt:
 
 
 except:
-    print "Caught it!"
+    print("Caught it!")
+    print(traceback.format_exc())
