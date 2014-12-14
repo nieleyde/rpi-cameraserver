@@ -93,7 +93,7 @@ class CameraActor(pykka.ThreadingActor):
                         
             self.camera.resolution = (int(params.get('width', 1280)), 
                                       int(params.get('height', 720)))
-            self.camera.framerate = int(params.get('framerate', 5))
+            self.camera.framerate = int(params.get('framerate', 30))
             self.camera.rotation = int(params.get('rotation', 180))
             
             # ensure that we have a named pipe
@@ -136,9 +136,10 @@ class CameraActor(pykka.ThreadingActor):
             "-i", "pipe:0",
             "-c:v", "copy", # pass the video stream through without codecing
             "-f", "segment",
-            "-hls_time", "5",
-            "-hls_list_size", "20",
-            "-hls_wrap", "20", # restart on index 0 after 20 segments to save disk space
+            "-hls_time", "2",
+            "-hls_list_size", "0",
+            "-hls_wrap", "0", # restart on index 0 after 20 segments to save disk space
+            "-hls_flags", "delete_segments",
             "-segment_format", "mpegts",
             "-segment_list", "stream/playlist.m3u8",
             "-segment_list_flags", "live",
@@ -157,19 +158,23 @@ class CameraActor(pykka.ThreadingActor):
             self.process_ffmpeg.terminate()
             self.process_ffmpeg.wait()
             
-            log.info('stopping recording')
-            self.camera.stop_recording()
-            
             log.info('terminating psips')
             self.process_psips.terminate()
             self.process_psips.wait()
+            
+            log.info('stopping recording')
+            self.camera.stop_recording()
+            
 
     def take_picture(self, params):
         
         camera = self.camera
+
+        if(not self.is_recording):
+            camera.resolution = (int(params.get('width', 1280)), int(params.get('height', 720)))
+
         
         camera.rotation = params.get('rotation', 180)
-        camera.resolution = (int(params.get('width', 1280)), int(params.get('height', 720)))
 
         camera.iso = int(params.get('iso', 0))
         camera.saturation = int(params.get('saturation', 0))
@@ -201,7 +206,7 @@ class CameraActor(pykka.ThreadingActor):
             time.sleep(0.2)
 
         stream = io.BytesIO()
-        camera.capture(stream, format='jpeg', quality=quality)
+        camera.capture(stream, format='jpeg', quality=quality, use_video_port=True)
         
         return stream.getvalue()
         
